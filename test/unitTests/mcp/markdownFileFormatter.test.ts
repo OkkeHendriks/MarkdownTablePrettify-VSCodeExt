@@ -2,7 +2,7 @@ import * as assert from "assert";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import { formatMarkdownFile } from "../../../mcp/markdownFileFormatter";
+import { formatMarkdownFile, MAX_COLUMN_PADDING } from "../../../mcp/markdownFileFormatter";
 
 suite("Markdown file formatter tests", () => {
     let workspaceRoot: string;
@@ -53,5 +53,15 @@ suite("Markdown file formatter tests", () => {
         } finally {
             fs.rmSync(outsideFilePath, { force: true });
         }
+    });
+
+    test("rejects excessive column padding", () => {
+        const filePath = path.join(workspaceRoot, "README.md");
+        fs.writeFileSync(filePath, "hello|world\n-|-\nfoo|bar", "utf8");
+
+        assert.throws(
+            () => formatMarkdownFile("README.md", { columnPadding: MAX_COLUMN_PADDING + 1 }, workspaceRoot),
+            new RegExp(`between 0 and ${MAX_COLUMN_PADDING}`)
+        );
     });
 });

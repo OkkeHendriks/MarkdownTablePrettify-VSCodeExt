@@ -12,6 +12,8 @@ demonstration.md
 gulpfile.js
 out/test/**
 mcp/**
+node_modules/@modelcontextprotocol/**
+node_modules/zod/**
 out/mcp/**
 package-lock.json
 package.npm.json

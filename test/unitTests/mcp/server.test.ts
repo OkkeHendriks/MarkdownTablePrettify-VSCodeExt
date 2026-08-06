@@ -3,6 +3,7 @@ import { ChildProcess, spawn } from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import { MAX_COLUMN_PADDING } from "../../../mcp/markdownFileFormatter";
 
 interface ServerOutput {
     stdout: string;
@@ -40,6 +41,9 @@ function runServer(messages: unknown[], workspaceRoot: string): Promise<ServerOu
 
 suite("MCP server tests", () => {
     test("serves modern MCP discovery, tool listing, and formatting over stdio", async () => {
+        const serverPath = path.resolve(__dirname, "../../../mcp/server.js");
+        assert.ok(fs.readFileSync(serverPath, "utf8").startsWith("#!/usr/bin/env node"));
+
         const workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "markdown-table-prettify-mcp-"));
         fs.writeFileSync(path.join(workspaceRoot, "README.md"), "hello|world\n-|-\nfoo|bar", "utf8");
         const metadata = {
@@ -84,6 +88,7 @@ suite("MCP server tests", () => {
             assert.strictEqual(output.stderr, "");
             assert.deepStrictEqual(responses[0].result.supportedVersions, ["2026-07-28"]);
             assert.strictEqual(responses[1].result.tools[0].name, "format_markdown_file");
+            assert.strictEqual(responses[1].result.tools[0].inputSchema.properties.columnPadding.maximum, MAX_COLUMN_PADDING);
             assert.strictEqual(responses[2].result.structuredContent.formattedMarkdown, "hello | world\n------|------\nfoo   | bar");
         } finally {
             fs.rmSync(workspaceRoot, { recursive: true, force: true });

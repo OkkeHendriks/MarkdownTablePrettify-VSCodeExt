@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## [Unreleased]
 ### Added
 - Added a local stdio MCP v2 server with a `format_markdown_file` tool for formatting complete Markdown files.
+### Changed
+- **BREAKING**: Raised the NPM package and Docker runtime requirement to Node.js 20+.
 
 ## 4.1.0 - 2026-05-22
 ### Added

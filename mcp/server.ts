@@ -1,7 +1,9 @@
+#!/usr/bin/env node
+
 import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
-import { formatMarkdownFile } from "./markdownFileFormatter";
+import { formatMarkdownFile, MAX_COLUMN_PADDING } from "./markdownFileFormatter";
 
 function createServer(): McpServer {
     const server = new McpServer({
@@ -17,7 +19,7 @@ function createServer(): McpServer {
             inputSchema: z.object({
                 path: z.string().min(1).describe("A workspace-relative or absolute path to an existing Markdown file."),
                 write: z.boolean().optional().describe("Replace the file when formatting changes are detected. Defaults to false."),
-                columnPadding: z.number().int().min(0).optional().describe("Number of extra spaces around table cell values. Defaults to 0.")
+                columnPadding: z.number().int().min(0).max(MAX_COLUMN_PADDING).optional().describe(`Number of extra spaces around table cell values. Must be between 0 and ${MAX_COLUMN_PADDING}. Defaults to 0.`)
             }),
             outputSchema: z.object({
                 filePath: z.string(),

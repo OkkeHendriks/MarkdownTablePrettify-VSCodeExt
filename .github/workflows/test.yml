@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node-version: [ 'lts/*', 'current' ]
+        node-version: [ '20.x', 'lts/*', 'current' ]
 
     steps:
     - name: Checkout
