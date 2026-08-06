@@ -99,6 +99,22 @@ npm run compile
 npm run --silent mcp
 ```
 
+To configure an MCP client to use a local checkout, launch the compiled server with the workspace as its working directory:
+
+```json
+{
+  "mcpServers": {
+    "markdown-table-prettify": {
+      "command": "node",
+      "args": [
+        "<path-to-repository>/out/mcp/server.js"
+      ],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}
+```
+
 For a published package, configure an MCP client to launch the server through `npx`:
 
 ```json
