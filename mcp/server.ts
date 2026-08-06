@@ -12,14 +12,14 @@ function createServer(): McpServer {
     });
 
     server.registerTool(
-        "format_markdown_files",
+        "format_markdown_tables",
         {
             title: "Format Markdown tables in files",
-            description: "Formats every Markdown table in one or more Markdown files using Markdown Table Prettifier. Relative paths are resolved against the working directory supplied by the MCP client when it launches the server. By default this is a dry run that reports whether changes are needed for each file; set dryRun to false to replace changed files. Each file reports its own status and includes an error when processing fails.",
+            description: "Formats Markdown tables in one or more existing Markdown files. The tool supports previewing changes with `dryRun=true` and applying changes with `dryRun=false`. Dry-run mode is useful when the scope is broad or uncertain. Direct writes are acceptable when the user explicitly requests formatting and the target files are clear. Non-table Markdown content remains unchanged. Paths may be absolute or relative to the MCP working directory. Returns one result per file with `changed`, `written`, and `error` fields.",
             inputSchema: z.object({
-                paths: z.array(z.string().min(1)).min(1).describe("One or more relative or absolute paths to existing Markdown files. Relative paths use the MCP client's supplied working directory."),
-                dryRun: z.boolean().default(true).describe("Only report whether formatting changes are needed. Defaults to true; set to false to replace the file when changes are detected."),
-                columnPadding: z.number().int().min(0).optional().describe("Number of extra spaces around table cell values. Defaults to 0.")
+                paths: z.array(z.string().min(1)).min(1).describe("One or more existing Markdown file paths. Relative paths resolve against the MCP working directory."),
+                dryRun: z.boolean().default(true).describe("Reports required changes without writing when true. Writes formatted files when false. Defaults to true."),
+                columnPadding: z.number().int().min(0).optional().describe("Number of additional spaces around table cell values. Defaults to 0.")
             }),
             outputSchema: z.object({
                 files: z.array(z.object({

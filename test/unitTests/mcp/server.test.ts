@@ -77,7 +77,7 @@ suite("MCP server tests", () => {
                         id: 3,
                         method: "tools/call",
                         params: {
-                            name: "format_markdown_files",
+                            name: "format_markdown_tables",
                             arguments: {
                                 paths: ["README.md", externalFilePath]
                             },
@@ -89,7 +89,7 @@ suite("MCP server tests", () => {
                         id: 4,
                         method: "tools/call",
                         params: {
-                            name: "format_markdown_files",
+                            name: "format_markdown_tables",
                             arguments: {
                                 paths: ["README.md", externalFilePath, missingFilePath],
                                 dryRun: false
@@ -105,7 +105,7 @@ suite("MCP server tests", () => {
             assert.strictEqual(output.exitCode, 0);
             assert.strictEqual(output.stderr, "");
             assert.deepStrictEqual(responses[0].result.supportedVersions, ["2026-07-28"]);
-            assert.strictEqual(responses[1].result.tools[0].name, "format_markdown_files");
+            assert.strictEqual(responses[1].result.tools[0].name, "format_markdown_tables");
             assert.strictEqual(responses[2].result.structuredContent.files.length, 2);
             assert.strictEqual(responses[2].result.structuredContent.files[0].changed, true);
             assert.strictEqual(responses[2].result.structuredContent.files[0].written, false);

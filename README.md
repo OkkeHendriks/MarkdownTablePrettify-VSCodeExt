@@ -87,54 +87,6 @@ Formatting files or checking if they're already formatted is also possible from 
 > * The `--` after the npm run script part is needed for npm to forward the arguments (for instance `--columnPadding=1`) to the actual prettyfier script.
 > * Optionally, use `npx` to prettify files: `npx markdown-table-prettify < input.md` instead of `npm run --silent prettify-md < input.md`.
 
-## MCP server
-
-The repository also provides a local MCP server over stdio. It exposes a `format_markdown_files` tool that formats every Markdown table in one or more Markdown files in a single call. Relative paths are resolved against the working directory supplied by the MCP client when it launches the server, while absolute paths can target any file accessible to the server process. By default it performs a dry run and reports whether formatting changes are needed for each file; set `dryRun: false` to replace changed files. Each file returns its own `changed` and `written` status, plus an `error` when processing fails.
-
-Build and run it from the repository:
-
-```powershell
-npm install
-npm run compile
-npm run --silent mcp
-```
-
-To configure an MCP client to use a local checkout, set `cwd` to the directory that should be used for resolving relative paths:
-
-```json
-{
-  "mcpServers": {
-    "markdown-table-prettify": {
-      "command": "node",
-      "args": [
-        "<path-to-repository>/out/mcp/server.js"
-      ],
-      "cwd": "${workspaceFolder}"
-    }
-  }
-}
-```
-
-For a published package, configure an MCP client to launch the server through `npx`:
-
-```json
-{
-  "mcpServers": {
-    "markdown-table-prettify": {
-      "command": "npx",
-      "args": [
-        "--yes",
-        "--package=markdown-table-prettify@<version>",
-        "markdown-table-prettify-mcp"
-      ],
-      "cwd": "${workspaceFolder}"
-    }
-  }
-}
-```
-
-The server does not impose a workspace boundary. Absolute paths are supported for files such as Git worktrees outside the current working directory. The server runs with the operating-system permissions of the Node process; Copilot CLI may prompt before invoking the tool, but that approval does not add or restrict the server’s filesystem access. The v2 MCP server supports the current protocol and can also serve legacy clients.
-
 ### Installation
 
 To access the CLI, the extension can either be used from the Github sources, from the already installed VSCode extension or from NPM.
@@ -154,7 +106,57 @@ Locate the installed extension path. The typical location of the installed exten
 
 #### Getting it from NPM
 
-Install the NPM package `npm install -g markdown-table-prettify`. 
+Install the NPM package `npm install -g markdown-table-prettify`.
+
+## MCP server
+
+The repository also provides an MCP server over stdio. It exposes a `format_markdown_tables` tool that formats Markdown tables in one or more existing Markdown files in a single call. Relative paths are resolved against the MCP working directory, while absolute paths can target any file accessible to the server process. The tool supports previewing changes with `dryRun=true` and applying changes with `dryRun=false`. It returns one result per file with `changed`, `written`, and `error` fields.
+
+For normal use, configure an MCP client to launch the published package through `npx`:
+
+```json
+{
+  "mcpServers": {
+    "markdown-table-prettify": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "--package=markdown-table-prettify@<version>",
+        "markdown-table-prettify-mcp"
+      ],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}
+```
+
+### Local development
+
+Developers working from a local checkout can build and run the server:
+
+```powershell
+npm install
+npm run compile
+npm run --silent mcp
+```
+
+To configure an MCP client to use that checkout, set `cwd` to the directory that should resolve relative paths:
+
+```json
+{
+  "mcpServers": {
+    "markdown-table-prettify": {
+      "command": "node",
+      "args": [
+        "<path-to-repository>/out/mcp/server.js"
+      ],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}
+```
+
+The server does not impose a workspace boundary. Absolute paths are supported for files such as Git worktrees outside the current working directory. The server runs with the operating-system permissions of the Node process; Copilot CLI may prompt before invoking the tool, but that approval does not add or restrict the server’s filesystem access. The v2 MCP server supports the current protocol and can also serve legacy clients.
 
 ## Known Issues
 
