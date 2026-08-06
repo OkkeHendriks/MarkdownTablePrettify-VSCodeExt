@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 ### Added
-- Added a local stdio MCP v2 server with a `format_markdown_file` tool for formatting complete Markdown files.
+- Added a local stdio MCP v2 server with a `format_markdown_files` tool for formatting complete Markdown files.
 ### Changed
 - **BREAKING**: Raised the NPM package runtime requirement to Node.js 22+.
 

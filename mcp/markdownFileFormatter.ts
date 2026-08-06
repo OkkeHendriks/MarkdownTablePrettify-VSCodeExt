@@ -1,10 +1,10 @@
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
-import { isAbsolute, relative, resolve, sep } from "node:path";
+import { resolve } from "node:path";
 import { CliPrettify } from "../cli/cliPrettify";
 import { StderrLogger } from "../src/diagnostics/stderrLogger";
 
 export interface MarkdownFileFormatOptions {
-    write?: boolean;
+    dryRun?: boolean;
     columnPadding?: number;
 }
 
@@ -12,49 +12,53 @@ export interface MarkdownFileFormatResult extends Record<string, unknown> {
     filePath: string;
     changed: boolean;
     written: boolean;
-    formattedMarkdown?: string;
+    error?: string;
 }
 
-export function formatMarkdownFile(
+export function formatMarkdownFiles(
+    filePaths: string[],
+    options: MarkdownFileFormatOptions = {}
+): MarkdownFileFormatResult[] {
+    if (filePaths.length === 0) {
+        throw new Error("At least one file path is required.");
+    }
+
+    return filePaths.map(filePath => formatMarkdownFile(filePath, options));
+}
+
+function formatMarkdownFile(
     filePath: string,
-    options: MarkdownFileFormatOptions = {},
-    workspaceRoot: string = process.cwd()
+    options: MarkdownFileFormatOptions
 ): MarkdownFileFormatResult {
-    // Resolve symlinks before checking the boundary so a link cannot escape the workspace.
-    const resolvedWorkspaceRoot = realpathSync(resolve(workspaceRoot));
-    const resolvedFilePath = realpathSync(resolve(resolvedWorkspaceRoot, filePath));
-    const relativeFilePath = relative(resolvedWorkspaceRoot, resolvedFilePath);
+    try {
+        const resolvedFilePath = realpathSync(resolve(filePath));
+        const input = readFileSync(resolvedFilePath, "utf8");
+        const formattedMarkdown = CliPrettify.prettify(
+            input,
+            {
+                check: false,
+                columnPadding: options.columnPadding ?? 0
+            },
+            new StderrLogger()
+        );
+        const changed = formattedMarkdown !== input;
+        const written = Boolean(options.dryRun === false && changed);
 
-    if (isOutsideWorkspace(relativeFilePath)) {
-        throw new Error(`File path must be inside the workspace: ${filePath}`);
+        if (written) {
+            writeFileSync(resolvedFilePath, formattedMarkdown, "utf8");
+        }
+
+        return {
+            filePath: resolvedFilePath,
+            changed,
+            written
+        };
+    } catch (error: unknown) {
+        return {
+            filePath,
+            changed: false,
+            written: false,
+            error: error instanceof Error ? error.message : String(error)
+        };
     }
-
-    const input = readFileSync(resolvedFilePath, "utf8");
-    const formattedMarkdown = CliPrettify.prettify(
-        input,
-        {
-            check: false,
-            columnPadding: options.columnPadding ?? 0
-        },
-        new StderrLogger()
-    );
-    const changed = formattedMarkdown !== input;
-    const written = Boolean(options.write && changed);
-
-    if (written) {
-        writeFileSync(resolvedFilePath, formattedMarkdown, "utf8");
-    }
-
-    return {
-        filePath: relativeFilePath,
-        changed,
-        written,
-        ...(options.write ? {} : { formattedMarkdown })
-    };
-}
-
-function isOutsideWorkspace(relativeFilePath: string): boolean {
-    return relativeFilePath === ".."
-        || relativeFilePath.startsWith(`..${sep}`)
-        || isAbsolute(relativeFilePath);
 }

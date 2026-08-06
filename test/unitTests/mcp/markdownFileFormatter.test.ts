@@ -2,57 +2,86 @@ import * as assert from "assert";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import { formatMarkdownFile } from "../../../mcp/markdownFileFormatter";
+import { formatMarkdownFiles } from "../../../mcp/markdownFileFormatter";
 
 suite("Markdown file formatter tests", () => {
-    let workspaceRoot: string;
+    let tempRoot: string;
 
     setup(() => {
-        workspaceRoot = fs.mkdtempSync(path.join(os.tmpdir(), "markdown-table-prettify-"));
+        tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "markdown-table-prettify-"));
     });
 
     teardown(() => {
-        fs.rmSync(workspaceRoot, { recursive: true, force: true });
+        fs.rmSync(tempRoot, { recursive: true, force: true });
     });
 
-    test("returns formatted content without writing by default", () => {
-        const filePath = path.join(workspaceRoot, "README.md");
+    test("reports changes for all files without writing by default", () => {
+        const filePaths = [
+            path.join(tempRoot, "README.md"),
+            path.join(tempRoot, "docs.md")
+        ];
         const input = "hello|world\n-|- \nfoo|bar";
-        fs.writeFileSync(filePath, input, "utf8");
+        for (const filePath of filePaths) {
+            fs.writeFileSync(filePath, input, "utf8");
+        }
 
-        const result = formatMarkdownFile("README.md", {}, workspaceRoot);
+        const results = formatMarkdownFiles(filePaths);
 
-        assert.strictEqual(result.filePath, "README.md");
-        assert.strictEqual(result.changed, true);
-        assert.strictEqual(result.written, false);
-        assert.strictEqual(result.formattedMarkdown, "hello | world\n------|------\nfoo   | bar");
-        assert.strictEqual(fs.readFileSync(filePath, "utf8"), input);
+        assert.strictEqual(results.length, filePaths.length);
+        for (const [index, result] of results.entries()) {
+            assert.strictEqual(result.filePath, fs.realpathSync(filePaths[index]));
+            assert.strictEqual(result.changed, true);
+            assert.strictEqual(result.written, false);
+            assert.strictEqual(fs.readFileSync(filePaths[index], "utf8"), input);
+        }
     });
 
-    test("writes formatted content when requested", () => {
-        const filePath = path.join(workspaceRoot, "README.md");
+    test("writes all changed files when dry run is disabled", () => {
+        const changedFilePath = path.join(tempRoot, "README.md");
+        const unchangedFilePath = path.join(tempRoot, "docs.md");
+        fs.writeFileSync(changedFilePath, "hello|world\n-|-\nfoo|bar", "utf8");
+        fs.writeFileSync(unchangedFilePath, "hello | world\n------|------\nfoo   | bar", "utf8");
+
+        const results = formatMarkdownFiles([changedFilePath, unchangedFilePath], { dryRun: false });
+
+        assert.strictEqual(results[0].changed, true);
+        assert.strictEqual(results[0].written, true);
+        assert.strictEqual(results[1].changed, false);
+        assert.strictEqual(results[1].written, false);
+        assert.strictEqual(fs.readFileSync(changedFilePath, "utf8"), "hello | world\n------|------\nfoo   | bar");
+        assert.strictEqual(fs.readFileSync(unchangedFilePath, "utf8"), "hello | world\n------|------\nfoo   | bar");
+    });
+
+    test("rejects an empty file list", () => {
+        assert.throws(
+            () => formatMarkdownFiles([]),
+            /At least one file path is required/
+        );
+    });
+
+    test("formats absolute files without a workspace restriction", () => {
+        const filePath = path.join(tempRoot, "outside-worktree.md");
         fs.writeFileSync(filePath, "hello|world\n-|-\nfoo|bar", "utf8");
 
-        const result = formatMarkdownFile("README.md", { write: true }, workspaceRoot);
+        const results = formatMarkdownFiles([filePath]);
 
-        assert.strictEqual(result.changed, true);
-        assert.strictEqual(result.written, true);
-        assert.strictEqual(fs.readFileSync(filePath, "utf8"), "hello | world\n------|------\nfoo   | bar");
-        assert.strictEqual(result.formattedMarkdown, undefined);
+        assert.strictEqual(results[0].filePath, fs.realpathSync(filePath));
+        assert.strictEqual(results[0].changed, true);
+        assert.strictEqual(results[0].written, false);
     });
 
-    test("rejects files outside the workspace", () => {
-        const outsideFilePath = path.join(path.dirname(workspaceRoot), `${path.basename(workspaceRoot)}-outside.md`);
-        fs.writeFileSync(outsideFilePath, "hello|world\n-|-\nfoo|bar", "utf8");
+    test("reports failures per file while continuing the batch", () => {
+        const validFilePath = path.join(tempRoot, "valid.md");
+        const missingFilePath = path.join(tempRoot, "missing.md");
+        fs.writeFileSync(validFilePath, "hello|world\n-|-\nfoo|bar", "utf8");
 
-        try {
-            assert.throws(
-                () => formatMarkdownFile(path.relative(workspaceRoot, outsideFilePath), {}, workspaceRoot),
-                /inside the workspace/
-            );
-        } finally {
-            fs.rmSync(outsideFilePath, { force: true });
-        }
+        const results = formatMarkdownFiles([validFilePath, missingFilePath], { dryRun: false });
+
+        assert.strictEqual(results[0].written, true);
+        assert.strictEqual(results[1].changed, false);
+        assert.strictEqual(results[1].written, false);
+        assert.match(results[1].error ?? "", /ENOENT|cannot find/i);
+        assert.strictEqual(fs.readFileSync(validFilePath, "utf8"), "hello | world\n------|------\nfoo   | bar");
     });
 
 });

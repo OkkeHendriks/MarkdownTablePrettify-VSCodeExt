@@ -89,7 +89,7 @@ Formatting files or checking if they're already formatted is also possible from 
 
 ## MCP server
 
-The repository also provides a local MCP server over stdio. It exposes a `format_markdown_file` tool that formats every Markdown table in an existing workspace file. By default it returns the formatted content without changing the file; pass `write: true` to replace the file.
+The repository also provides a local MCP server over stdio. It exposes a `format_markdown_files` tool that formats every Markdown table in one or more Markdown files in a single call. Relative paths are resolved against the working directory supplied by the MCP client when it launches the server, while absolute paths can target any file accessible to the server process. By default it performs a dry run and reports whether formatting changes are needed for each file; set `dryRun: false` to replace changed files. Each file returns its own `changed` and `written` status, plus an `error` when processing fails.
 
 Build and run it from the repository:
 
@@ -99,7 +99,7 @@ npm run compile
 npm run --silent mcp
 ```
 
-To configure an MCP client to use a local checkout, launch the compiled server with the workspace as its working directory:
+To configure an MCP client to use a local checkout, set `cwd` to the directory that should be used for resolving relative paths:
 
 ```json
 {
@@ -133,7 +133,7 @@ For a published package, configure an MCP client to launch the server through `n
 }
 ```
 
-The server uses its working directory as the workspace root and refuses paths outside that workspace. The v2 MCP server supports the current protocol and can also serve legacy clients.
+The server does not impose a workspace boundary. Absolute paths are supported for files such as Git worktrees outside the current working directory. The server runs with the operating-system permissions of the Node process; Copilot CLI may prompt before invoking the tool, but that approval does not add or restrict the server’s filesystem access. The v2 MCP server supports the current protocol and can also serve legacy clients.
 
 ### Installation
 

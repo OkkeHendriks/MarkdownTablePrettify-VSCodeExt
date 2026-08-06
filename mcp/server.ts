@@ -3,7 +3,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
-import { formatMarkdownFile } from "./markdownFileFormatter";
+import { formatMarkdownFiles } from "./markdownFileFormatter";
 
 function createServer(): McpServer {
     const server = new McpServer({
@@ -12,24 +12,28 @@ function createServer(): McpServer {
     });
 
     server.registerTool(
-        "format_markdown_file",
+        "format_markdown_files",
         {
-            title: "Format Markdown tables in a file",
-            description: "Formats every Markdown table in a workspace file using Markdown Table Prettifier. Set write to true to replace the file; otherwise the formatted Markdown is returned without changing the file.",
+            title: "Format Markdown tables in files",
+            description: "Formats every Markdown table in one or more Markdown files using Markdown Table Prettifier. Relative paths are resolved against the working directory supplied by the MCP client when it launches the server. By default this is a dry run that reports whether changes are needed for each file; set dryRun to false to replace changed files. Each file reports its own status and includes an error when processing fails.",
             inputSchema: z.object({
-                path: z.string().min(1).describe("A workspace-relative or absolute path to an existing Markdown file."),
-                write: z.boolean().optional().describe("Replace the file when formatting changes are detected. Defaults to false."),
+                paths: z.array(z.string().min(1)).min(1).describe("One or more relative or absolute paths to existing Markdown files. Relative paths use the MCP client's supplied working directory."),
+                dryRun: z.boolean().default(true).describe("Only report whether formatting changes are needed. Defaults to true; set to false to replace the file when changes are detected."),
                 columnPadding: z.number().int().min(0).optional().describe("Number of extra spaces around table cell values. Defaults to 0.")
             }),
             outputSchema: z.object({
-                filePath: z.string(),
-                changed: z.boolean(),
-                written: z.boolean(),
-                formattedMarkdown: z.string().optional()
+                files: z.array(z.object({
+                    filePath: z.string(),
+                    changed: z.boolean(),
+                    written: z.boolean(),
+                    error: z.string().optional()
+                }))
             })
         },
-        async ({ path, write, columnPadding }) => {
-            const result = formatMarkdownFile(path, { write, columnPadding });
+        async ({ paths, dryRun, columnPadding }) => {
+            const result = {
+                files: formatMarkdownFiles(paths, { dryRun, columnPadding })
+            };
             return {
                 content: [
                     {
