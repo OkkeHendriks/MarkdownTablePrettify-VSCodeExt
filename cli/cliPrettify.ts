@@ -18,11 +18,12 @@ import { PadCalculatorSelector } from "../src/padCalculation/padCalculatorSelect
 import { AlignmentMarkerStrategy } from "../src/viewModelFactories/alignmentMarking";
 import { TableStringWriter } from "../src/writers/tableStringWriter";
 import { ValuePaddingProvider } from "../src/writers/valuePaddingProvider";
+import { ILogger } from "../src/diagnostics/logger";
 
 export class CliPrettify {
 
-    public static prettify(text: string, options?: CliOptions): string {
-        const prettyfier = this.createPrettyfier(options);
+    public static prettify(text: string, options?: CliOptions, logger: ILogger = new ConsoleLogger()): string {
+        const prettyfier = this.createPrettyfier(options, logger);
         return prettyfier.formatTables(text);
     }
 
@@ -32,8 +33,7 @@ export class CliPrettify {
         }
     }
 
-    private static createPrettyfier(options?: CliOptions): MultiTablePrettyfier {
-        const logger = new ConsoleLogger();
+    private static createPrettyfier(options: CliOptions | undefined, logger: ILogger): MultiTablePrettyfier {
         return new MultiTablePrettyfier(
             new TableFinder(new TableValidator(new SelectionInterpreter(true))),
             new SingleTablePrettyfier(

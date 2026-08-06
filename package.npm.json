@@ -2,14 +2,17 @@
     "main": "./cli/cliPrettify.js",
     "types": "./cli/cliPrettify.d.ts",
     "bin": {
-        "markdown-table-prettify": "./cli/index.js"
+        "markdown-table-prettify": "./cli/index.js",
+        "markdown-table-prettify-mcp": "./mcp/server.js"
     },
     "scripts": {
         "prettify-md": "node ./cli/index.js",
-        "check-md": "node ./cli/index.js --check"
+        "check-md": "node ./cli/index.js --check",
+        "mcp": "node ./mcp/server.js"
     },
     "files": [
         "/cli",
-        "/src"
+        "/src",
+        "/mcp"
     ]
 }

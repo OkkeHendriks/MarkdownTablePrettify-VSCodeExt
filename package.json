@@ -87,13 +87,14 @@
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
-    "dist": "rm -r ./out; tsc -p ./tsconfig.dist.json && npx gulp merge-packagejson-for-npm-dist && cp README.md out && cp LICENSE out && cd out && npm pack",
+    "dist": "node -e \"require('fs').rmSync('./out',{recursive:true,force:true})\" && tsc -p ./tsconfig.dist.json && npx gulp merge-packagejson-for-npm-dist && node -e \"const fs=require('fs'); fs.copyFileSync('README.md','out/README.md'); fs.copyFileSync('LICENSE','out/LICENSE')\" && cd out && npm pack",
     "compile": "tsc -p ./",
     "pretest": "npm run compile",
     "test": "npx gulp copy-systemTest-resources && node ./out/test/index.js",
     "benchmark": "npm run compile && npx gulp copy-systemTest-resources && node ./out/test/systemTests/benchmarkTestRunner.js",
     "prettify-md": "node ./out/cli/index.js",
-    "check-md": "node ./out/cli/index.js --check"
+    "check-md": "node ./out/cli/index.js --check",
+    "mcp": "node ./out/mcp/server.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -107,5 +108,9 @@
     "typemoq": "^2.1.0",
     "typescript": "^6.0.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  }
 }

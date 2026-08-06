@@ -87,6 +87,20 @@ Formatting files or checking if they're already formatted is also possible from 
 > * The `--` after the npm run script part is needed for npm to forward the arguments (for instance `--columnPadding=1`) to the actual prettyfier script.
 > * Optionally, use `npx` to prettify files: `npx markdown-table-prettify < input.md` instead of `npm run --silent prettify-md < input.md`.
 
+## MCP server
+
+The repository also provides a local MCP server over stdio. It exposes a `format_markdown_file` tool that formats every Markdown table in an existing workspace file. By default it returns the formatted content without changing the file; pass `write: true` to replace the file.
+
+Build and run it from the repository:
+
+```powershell
+npm install
+npm run compile
+npm run --silent mcp
+```
+
+Configure an MCP client to launch `node` with `out/mcp/server.js` as its argument. The server uses its working directory as the workspace root and refuses paths outside that workspace.
+
 ### Installation
 
 To access the CLI, the extension can either be used from the Github sources, from the already installed VSCode extension or from NPM.

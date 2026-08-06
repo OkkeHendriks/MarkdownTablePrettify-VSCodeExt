@@ -11,6 +11,8 @@ cli/**
 demonstration.md
 gulpfile.js
 out/test/**
+mcp/**
+out/mcp/**
 package-lock.json
 package.npm.json
 src/**

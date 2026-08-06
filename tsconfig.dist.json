@@ -3,7 +3,7 @@
         "module": "commonjs",
         "target": "ES2022",
         "outDir": "out",
-        "lib": [ "ES2022" ],
+        "lib": [ "ES2022", "DOM" ],
         "types": [ "node" ],
         "sourceMap": false,
         "declaration": true,
@@ -11,7 +11,8 @@
     },
     "include": [
         "src/**/*",
-        "cli/**/*"
+        "cli/**/*",
+        "mcp/**/*"
     ],
     "exclude": [ 
         "node_modules", 
