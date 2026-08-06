@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:lts-alpine AS builder
 
 RUN apk upgrade --no-cache
 
@@ -14,7 +14,7 @@ COPY src/ src/
 RUN npm run compile
 
 
-FROM node:20-alpine
+FROM node:lts-alpine
 
 RUN apk upgrade --no-cache
 
