@@ -8,8 +8,6 @@ export interface MarkdownFileFormatOptions {
     columnPadding?: number;
 }
 
-export const MAX_COLUMN_PADDING = 100;
-
 export interface MarkdownFileFormatResult extends Record<string, unknown> {
     filePath: string;
     changed: boolean;
@@ -23,7 +21,6 @@ export function formatMarkdownFile(
     workspaceRoot: string = process.cwd()
 ): MarkdownFileFormatResult {
     // Resolve symlinks before checking the boundary so a link cannot escape the workspace.
-    const columnPadding = validateColumnPadding(options.columnPadding);
     const resolvedWorkspaceRoot = realpathSync(resolve(workspaceRoot));
     const resolvedFilePath = realpathSync(resolve(resolvedWorkspaceRoot, filePath));
     const relativeFilePath = relative(resolvedWorkspaceRoot, resolvedFilePath);
@@ -37,7 +34,7 @@ export function formatMarkdownFile(
         input,
         {
             check: false,
-            columnPadding
+            columnPadding: options.columnPadding ?? 0
         },
         new StderrLogger()
     );
@@ -54,14 +51,6 @@ export function formatMarkdownFile(
         written,
         ...(options.write ? {} : { formattedMarkdown })
     };
-}
-
-function validateColumnPadding(columnPadding: number | undefined): number {
-    const value = columnPadding ?? 0;
-    if (!Number.isInteger(value) || value < 0 || value > MAX_COLUMN_PADDING) {
-        throw new RangeError(`Column padding must be an integer between 0 and ${MAX_COLUMN_PADDING}.`);
-    }
-    return value;
 }
 
 function isOutsideWorkspace(relativeFilePath: string): boolean {

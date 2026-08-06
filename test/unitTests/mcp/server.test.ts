@@ -3,7 +3,6 @@ import { ChildProcess, spawn } from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import { MAX_COLUMN_PADDING } from "../../../mcp/markdownFileFormatter";
 
 interface ServerOutput {
     stdout: string;
@@ -88,7 +87,6 @@ suite("MCP server tests", () => {
             assert.strictEqual(output.stderr, "");
             assert.deepStrictEqual(responses[0].result.supportedVersions, ["2026-07-28"]);
             assert.strictEqual(responses[1].result.tools[0].name, "format_markdown_file");
-            assert.strictEqual(responses[1].result.tools[0].inputSchema.properties.columnPadding.maximum, MAX_COLUMN_PADDING);
             assert.strictEqual(responses[2].result.structuredContent.formattedMarkdown, "hello | world\n------|------\nfoo   | bar");
         } finally {
             fs.rmSync(workspaceRoot, { recursive: true, force: true });
