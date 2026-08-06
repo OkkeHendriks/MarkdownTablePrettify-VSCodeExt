@@ -36,7 +36,7 @@ Right-click on a table to access the context menu option `Prettify markdown tabl
 
 ## NPM
 
-The formatting logic and MCP server are available as an NPM package: `npm install --save markdown-table-prettify`. The Typescript code is compiled to ES2022 and shipped inside the package. Requires Node.js 20+.
+The formatting logic and MCP server are available as an NPM package: `npm install --save markdown-table-prettify`. The Typescript code is compiled to ES2022 and shipped inside the package. Requires Node.js 22+.
 
 It currently exposes the entry point also used by the _CLI_. It can be used from regular NodeJS or web apps:
 
