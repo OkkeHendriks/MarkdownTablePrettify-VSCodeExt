@@ -36,7 +36,7 @@ Right-click on a table to access the context menu option `Prettify markdown tabl
 
 ## NPM
 
-The core formatting logic is available as an NPM package: `npm install --save markdown-table-prettify`. The Typescript code is compiled to ES2022 and shipped inside the package. Requires Node.js 16.11+.
+The core formatting logic is available as an NPM package: `npm install --save markdown-table-prettify`. The Typescript code is compiled to ES2022 and shipped inside the package. The formatter core requires Node.js 16.11+; the MCP server requires Node.js 20+.
 
 It currently exposes the entry point also used by the _CLI_. It can be used from regular NodeJS or web apps:
 
@@ -99,7 +99,25 @@ npm run compile
 npm run --silent mcp
 ```
 
-Configure an MCP client to launch `node` with `out/mcp/server.js` as its argument. The server uses its working directory as the workspace root and refuses paths outside that workspace.
+For a published package, configure an MCP client to launch the server through `npx`:
+
+```json
+{
+  "mcpServers": {
+    "markdown-table-prettify": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "--package=markdown-table-prettify@<version>",
+        "markdown-table-prettify-mcp"
+      ],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}
+```
+
+The server uses its working directory as the workspace root and refuses paths outside that workspace. The v2 MCP server supports the current protocol and can also serve legacy clients.
 
 ### Installation
 
