@@ -20,6 +20,7 @@ export function formatMarkdownFile(
     options: MarkdownFileFormatOptions = {},
     workspaceRoot: string = process.cwd()
 ): MarkdownFileFormatResult {
+    // Resolve symlinks before checking the boundary so a link cannot escape the workspace.
     const resolvedWorkspaceRoot = realpathSync(resolve(workspaceRoot));
     const resolvedFilePath = realpathSync(resolve(resolvedWorkspaceRoot, filePath));
     const relativeFilePath = relative(resolvedWorkspaceRoot, resolvedFilePath);

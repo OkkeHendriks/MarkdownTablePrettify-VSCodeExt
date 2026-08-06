@@ -87,7 +87,7 @@
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
-    "dist": "node -e \"require('fs').rmSync('./out',{recursive:true,force:true})\" && tsc -p ./tsconfig.dist.json && npx gulp merge-packagejson-for-npm-dist && node -e \"const fs=require('fs'); fs.copyFileSync('README.md','out/README.md'); fs.copyFileSync('LICENSE','out/LICENSE')\" && cd out && npm pack",
+    "dist": "node ./scripts/packageDist.js",
     "compile": "tsc -p ./",
     "pretest": "npm run compile",
     "test": "npx gulp copy-systemTest-resources && node ./out/test/index.js",

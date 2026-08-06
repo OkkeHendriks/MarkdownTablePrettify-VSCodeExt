@@ -43,6 +43,7 @@ function createServer(): McpServer {
     return server;
 }
 
+// Keep legacy serving enabled while MCP clients migrate to the current protocol.
 serveStdio(createServer, {
     legacy: "serve",
     onerror: error => {
